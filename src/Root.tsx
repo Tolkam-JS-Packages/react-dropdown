@@ -15,6 +15,13 @@ const initVisibility = {
 class Root extends PureComponent<IProps, IState> {
 
     /**
+     * @type IProps
+     */
+    public static defaultProps = {
+        defaultActive: false,
+    }
+
+    /**
      * @type IState
      */
     public state = {
@@ -32,6 +39,14 @@ class Root extends PureComponent<IProps, IState> {
      * @type Child
      */
     protected items: Child;
+
+    public constructor(props: IProps) {
+        super(props);
+        const active = props.defaultActive as boolean;
+
+        this.state.active = active;
+        this.subscribe(active);
+    }
 
     /**
      * Registers child
@@ -80,11 +95,12 @@ class Root extends PureComponent<IProps, IState> {
         const {active, v} = state;
 
         const className = classNames(props.className, {
+            [classPrefix + '-active']:  active,
             [classPrefix + '-right']:  active && !v.topRight && !v.bottomRight,
         });
 
         const wrapProps: any = {
-            ...omit(that.props, ['classPrefix']),
+            ...omit(that.props, ['classPrefix', 'defaultActive']),
             className,
         };
 
@@ -171,6 +187,8 @@ type TChildren = TChild | TChild[];
 interface IProps extends HTMLProps<Root> {
 
     children: TChildren;
+
+    defaultActive?: boolean;
 
     // visibility classes prefix
     classPrefix?: string;

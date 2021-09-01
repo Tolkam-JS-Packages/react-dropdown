@@ -88,7 +88,7 @@ class Child extends PureComponent<IProps, any> {
         const props = this.props;
         const event = e.nativeEvent;
 
-        if(props.active || event instanceof KeyboardEvent && event.key !== 'Enter') {
+        if(event instanceof KeyboardEvent && event.key !== 'Enter') {
             return;
         }
 
