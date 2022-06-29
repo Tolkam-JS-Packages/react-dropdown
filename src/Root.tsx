@@ -1,4 +1,4 @@
-import { PureComponent, HTMLProps, Children as ReactChildren, cloneElement, isValidElement, ComponentElement } from 'react';
+import { PureComponent, HTMLProps, Children as ReactChildren, cloneElement, isValidElement, ComponentElement, createElement } from 'react';
 import { IVisibility } from '@tolkam/lib-in-view';
 import { omit, shallowEqual } from '@tolkam/lib-utils';
 import { classNames } from '@tolkam/lib-utils-ui';
@@ -91,23 +91,22 @@ class Root extends PureComponent<IProps, IState> {
     public render() {
         const that = this;
         const {props, state} = that;
-        const {classPrefix} = props;
         const {active, v} = state;
 
+        let classPrefix = props.classPrefix;
+        classPrefix = classPrefix !== undefined ? classPrefix : '';
         const className = classNames(props.className, {
             [classPrefix + '-active']:  active,
             [classPrefix + '-right']:  active && !v.topRight && !v.bottomRight,
         });
 
         const wrapProps: any = {
-            ...omit(that.props, ['classPrefix', 'defaultActive']),
+            ...omit(that.props, ['classPrefix', 'defaultActive', 'tagName']),
             className,
         };
 
         return <DropdownContext.Provider value={that}>
-            <div {...wrapProps}>
-                {that.applyProps(that.props.children)}
-            </div>
+            {createElement(props.tagName || 'div', wrapProps, that.applyProps(that.props.children))}
         </DropdownContext.Provider>;
     }
 
@@ -137,7 +136,8 @@ class Root extends PureComponent<IProps, IState> {
         }
 
         const itemsEl = this.items?.el;
-        if(itemsEl && !itemsEl.contains(e.target as HTMLElement)) {
+        const target = e.target as HTMLElement;
+        if(this.trigger?.el !== target && itemsEl && !itemsEl.contains(target)) {
             this.toggle(false);
         }
     }
@@ -149,7 +149,7 @@ class Root extends PureComponent<IProps, IState> {
      */
     protected subscribe(state: boolean) {
         for(const e of ['click', 'keyup']) {
-            document[(state ? 'add' : 'remove') + 'EventListener'](e, this.onEvents);
+            document[(state ? 'add' : 'remove') + 'EventListener'](e, this.onEvents, {capture: true});
         }
     }
 
@@ -189,6 +189,8 @@ interface IProps extends HTMLProps<Root> {
     children: TChildren;
 
     defaultActive?: boolean;
+
+    tagName?: string;
 
     // visibility classes prefix
     classPrefix?: string;

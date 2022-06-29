@@ -1,10 +1,11 @@
-import { PureComponent, HTMLProps, createElement, SyntheticEvent } from 'react';
-import { classNames } from '@tolkam/lib-utils-ui';
+import { PureComponent, HTMLProps, createElement, SyntheticEvent, ContextType } from 'react';
 import DropdownContext, { TContext } from './context';
 import InViewTracker from '@tolkam/lib-in-view';
 import { omit } from '@tolkam/lib-utils';
 
 class Child extends PureComponent<IProps, any> {
+
+    declare context: NonNullable<ContextType<typeof DropdownContext>>
 
     /**
      * @type DropdownContext
@@ -64,10 +65,7 @@ class Child extends PureComponent<IProps, any> {
 
         const wrapProps: any = {
             ref: (r: HTMLElement) => this.el = r,
-            className: classNames(props.className, {
-                [(props.classPrefix || 'child') + '-active']: props.active
-            }),
-            ...omit(props, ['isTrigger', 'classPrefix', 'active']),
+            ...omit(props, ['isTrigger', 'classPrefix', 'active', 'tagName']),
         };
 
         if(props.isTrigger) {
@@ -75,7 +73,7 @@ class Child extends PureComponent<IProps, any> {
         }
 
         return createElement(
-            props.isTrigger ? 'a' : 'div',
+            props.tagName || (props.isTrigger ? 'a' : 'div'),
             wrapProps,
             props.children
         );
@@ -85,7 +83,6 @@ class Child extends PureComponent<IProps, any> {
      * Handles element events
      */
     protected onEvent = (e: SyntheticEvent<MouseEvent | KeyboardEvent>) => {
-        const props = this.props;
         const event = e.nativeEvent;
 
         if(event instanceof KeyboardEvent && event.key !== 'Enter') {
@@ -102,6 +99,8 @@ interface IProps extends HTMLProps<Child> {
     isTrigger?: boolean;
 
     classPrefix?: string;
+
+    tagName?: string;
 
     active?: boolean;
 }
